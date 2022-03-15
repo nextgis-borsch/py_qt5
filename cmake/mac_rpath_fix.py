@@ -11,11 +11,8 @@
 ################################################################################
 
 import os
-import shutil
-import string
 import subprocess
 import sys
-import multiprocessing
 import glob
 
 install_dir = 'inst'
@@ -23,22 +20,22 @@ install_dir = 'inst'
 # old_rpath = sys.argv[1]
 
 def run(args):
-    print 'calling ' + string.join(args)
+    print('calling ' + "".join(args))
     try:
         subprocess.check_call(args)
         return True
-    except subprocess.CalledProcessError, e:
+    except:
         return False
 
 if sys.platform != 'darwin':
     exit('Mac OS X only supported')
 # Qt libraries put to the <NextGIS>/Library/Frameworks/Qt<Core,Gui, etc>.framework
 # Qt plugins put to the <NextGIS>/Library/plugins/<Qt4|Qt5>/<codecs,sqldrivers, etc.>/*.dylib
-# Python files put to the <NextGIS>/Library/Python/2.7/site-packages/<PyQt4,osge,numpy>
+# Python files put to the <NextGIS>/Library/Python/2.7/site-packages/<PyQt4,osgeo,numpy>
 # Console files put to the <NextGIS>/usr/bin
 repo_root = os.getcwd()
 qt_path = os.path.join(repo_root, install_dir)
-qt_install_lib_path = os.path.join(qt_path, 'Library','Python','2.7','site-packages', 'PyQt4')
+qt_install_lib_path = os.path.join(qt_path, 'PyQt5') # 'Library','Python','3','site-packages', 
 files = glob.glob(qt_install_lib_path + "/*.so")
 for f in files:
     if not os.path.isdir(f):
@@ -46,9 +43,10 @@ for f in files:
         run(('install_name_tool', '-add_rpath', '@loader_path/../../../../Frameworks', f))
         run(('install_name_tool', '-add_rpath', '@loader_path/../Library/Frameworks', f))
 
-qt_install_bin_path = os.path.join(qt_path, 'bin')
-files = glob.glob(qt_install_bin_path + "/*")
-for f in files:
-    if not os.path.isdir(f):
-        run(('install_name_tool', '-add_rpath', '@executable_path/../../Library/Frameworks', f))
-        run(('install_name_tool', '-add_rpath', '@executable_path/../Library/Frameworks', f))
+# no binary utilities produced
+# qt_install_bin_path = os.path.join(qt_path, 'bin')
+# files = glob.glob(qt_install_bin_path + "/*")
+# for f in files:
+#     if not os.path.isdir(f):
+#         run(('install_name_tool', '-add_rpath', '@executable_path/../../Library/Frameworks', f))
+#         run(('install_name_tool', '-add_rpath', '@executable_path/../Library/Frameworks', f))
