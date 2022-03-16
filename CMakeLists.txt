@@ -50,21 +50,18 @@ endif()
 
 set(INSTALL_CMAKECONF_DIR CMake CACHE INTERNAL "Installation directory for cmake config files" FORCE)
 
-find_program(PYTHON3_EXECUTABLE python3)
-set(PYTHON_EXECUTABLE ${PYTHON3_EXECUTABLE})
+find_package(Python3 COMPONENTS Interpreter Development)
 
-find_package(PythonInterp 3)
-if(PYTHONINTERP_FOUND)
-    set(PYTHON3_EXECUTABLE ${PYTHON_EXECUTABLE})
-    set(PYTHON3_VERSION_MAJOR ${PYTHON_VERSION_MAJOR})
-    set(PYTHON3_VERSION_MINOR ${PYTHON_VERSION_MINOR})
-else()
-    message(FATAL_ERROR "Cannot find python 3")
+if(${Python3_FOUND})
+    set(PYTHON_EXECUTABLE ${Python3_EXECUTABLE})
+    set(PYTHON_LIBRARY ${Python3_LIBRARIES})
+    set(PYTHON_VERSION_MAJOR ${Python3_VERSION_MAJOR})
+    set(PYTHON_VERSION_MINOR ${Python3_VERSION_MINOR})
 endif()
 
-set(PYTHON_EXECUTABLE ${PYTHON3_EXECUTABLE})
-set(PYTHON_VERSION_MAJOR ${PYTHON3_VERSION_MAJOR})
-set(PYTHON_VERSION_MINOR ${PYTHON3_VERSION_MINOR})
+set(PYTHON3_EXECUTABLE ${PYTHON_EXECUTABLE})
+set(PYTHON3_VERSION_MAJOR ${PYTHON_VERSION_MAJOR})
+set(PYTHON3_VERSION_MINOR ${PYTHON_VERSION_MINOR})
 
 file(DOWNLOAD "https://pypi.python.org/pypi/${PROJECT_NAME}/json" "${CMAKE_CURRENT_BINARY_DIR}/meta.json")
 
@@ -156,7 +153,6 @@ set(RUN_DEPENDENCIES
     lib_uriparser
     lib_z
 )
-get_compiler_version(COMPILER)
 
 foreach(RUN_DEPENDENCY ${RUN_DEPENDENCIES})
     execute_process(
@@ -195,26 +191,20 @@ find_program(SIP_INSTALL_EXECUTABLE sip-install PATHS ${BASE_PATH}/bin)
 
 message(STATUS "Configure args: ${CONFIGURE_ARGS}")
 
-macro(build_py ver)
-    add_custom_target(build_py${ver} ALL
-        COMMAND ${SIP_INSTALL_EXECUTABLE} ${CONFIGURE_ARGS}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${PYQT_INPUT_NAME}
+add_custom_target(build_py${ver} ALL
+    COMMAND ${SIP_INSTALL_EXECUTABLE} ${CONFIGURE_ARGS}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${PYQT_INPUT_NAME}
+    VERBATIM
+)
+
+if(OSX_FRAMEWORK)
+    add_custom_target(fix_py${ver} ALL
+        COMMAND ${CONFIGURE_CMD}
+        ${PYTHON${ver}_EXECUTABLE} ${CMAKE_SOURCE_DIR}/cmake/mac_rpath_fix.py
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        DEPENDS build_py${ver}
         VERBATIM
     )
-
-    if(OSX_FRAMEWORK)
-        add_custom_target(fix_py${ver} ALL
-            COMMAND ${CONFIGURE_CMD}
-            ${PYTHON${ver}_EXECUTABLE} ${CMAKE_SOURCE_DIR}/cmake/mac_rpath_fix.py
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-            DEPENDS build_py${ver}
-            VERBATIM
-        )
-    endif()
-endmacro()
-
-if(PYTHON3_EXECUTABLE)
-    build_py(3)
 endif()
 
 set(PACKAGE_NAME ${PROJECT_NAME})
