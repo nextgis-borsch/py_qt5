@@ -169,7 +169,16 @@ set(DISABLE_PYQT_COMPONENTS
     QtSensors
     QtSerialPort
     QtTextToSpeech
+    QtAndroidExtras
+    Enginio
+    QtWebKit
+    QtWebKitWidgets
+    QtX11Extras
 )
+
+if(WIN32)
+    set(DISABLE_PYQT_COMPONENTS ${DISABLE_PYQT_COMPONENTS} QtMacExtras)
+endif()
 
 foreach(_COMPONENT ${DISABLE_PYQT_COMPONENTS})
     set(CONFIGURE_ARGS ${CONFIGURE_ARGS} --disable ${_COMPONENT})
