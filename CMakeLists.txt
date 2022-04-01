@@ -247,10 +247,12 @@ else()
     file(WRITE ${PYQT_SCRIPTS_DIR}/pylupdate5 "#!/bin/sh\nexec python3 -m PyQt5.pylupdate_main \${1+\"\$@\"}")
 endif()
 
+include(GNUInstallDirs)
+
 if(OSX_FRAMEWORK)
     set(INSTALL_PYTHON_DIR "Library/Python/${PYTHON_VERSION_MAJOR}/site-packages/")
 elseif(WIN32)
-    set(INSTALL_PYTHON_DIR "${INSTALL_LIB_DIR}/Python${PYTHON_VERSION_MAJOR}/site-packages/")
+    set(INSTALL_PYTHON_DIR "${CMAKE_INSTALL_LIBDIR}/Python${PYTHON_VERSION_MAJOR}/site-packages/")
 else()
     set(INSTALL_PYTHON_DIR "lib/python${PYTHON_VERSION_MAJOR}/dist-packages/")
 endif()
