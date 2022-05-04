@@ -50,7 +50,7 @@ endif()
 
 set(INSTALL_CMAKECONF_DIR CMake CACHE INTERNAL "Installation directory for cmake config files" FORCE)
 
-find_package(Python3 COMPONENTS Interpreter Development)
+find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
 
 if(${Python3_FOUND})
     set(PYTHON_EXECUTABLE ${Python3_EXECUTABLE})
@@ -228,24 +228,30 @@ string(TOUPPER ${PACKAGE_NAME} PACKAGE_UPPER_NAME)
 
 set(PYQT_SCRIPTS_DIR ${CMAKE_CURRENT_BINARY_DIR}/pyqt5-scripts)
 if(WIN32)
-    set(INSTALL_PYUIC_PROGRAM bin/pyuic5.bat)
-    set(INSTALL_PYRCC_PROGRAM bin/pyrcc5.bat)
-    set(INSTALL_PYLUPDATE_PROGRAM bin/pylupdate5.bat)
-else()
-    set(PYQT_SCRIPTS 
-        ${CMAKE_CURRENT_BINARY_DIR}/pyqt5-scripts/pyrcc5
-        ${CMAKE_CURRENT_BINARY_DIR}/pyqt5-scripts/pyuic5
-        ${CMAKE_CURRENT_BINARY_DIR}/pyqt5-scripts/pylupdate5
-    )
-    set(INSTALL_PYUIC_PROGRAM bin/pyuic5)
-    set(INSTALL_PYRCC_PROGRAM bin/pyrcc5)
-    set(INSTALL_PYLUPDATE_PROGRAM bin/pylupdate5)
+    set(PYRCC5 pyrcc5.bat)
+    set(PYUIC5 pyuic5.bat)
+    set(PYLUPDATE5 pylupdate5.bat)
 
-    file(MAKE_DIRECTORY ${PYQT_SCRIPTS_DIR})
-    file(WRITE ${PYQT_SCRIPTS_DIR}/pyrcc5 "#!/bin/sh\nexec python3 -m PyQt5.pyrcc_main \${1+\"\$@\"}")
-    file(WRITE ${PYQT_SCRIPTS_DIR}/pyuic5 "#!/bin/sh\nexec python3 -m PyQt5.uic.pyuic \${1+\"\$@\"}")
-    file(WRITE ${PYQT_SCRIPTS_DIR}/pylupdate5 "#!/bin/sh\nexec python3 -m PyQt5.pylupdate_main \${1+\"\$@\"}")
+else()
+    set(PYRCC5 pyrcc5)
+    set(PYUIC5 pyuic5)
+    set(PYLUPDATE5 pylupdate5)
 endif()
+ 
+set(PYQT_SCRIPTS 
+    ${CMAKE_CURRENT_BINARY_DIR}/pyqt5-scripts/${PYRCC5}
+    ${CMAKE_CURRENT_BINARY_DIR}/pyqt5-scripts/${PYUIC5}
+    ${CMAKE_CURRENT_BINARY_DIR}/pyqt5-scripts/${PYLUPDATE5}
+)
+set(INSTALL_PYUIC_PROGRAM bin/${PYUIC5})
+set(INSTALL_PYRCC_PROGRAM bin/${PYRCC5})
+set(INSTALL_PYLUPDATE_PROGRAM bin/${PYLUPDATE5})
+
+file(MAKE_DIRECTORY ${PYQT_SCRIPTS_DIR})
+file(WRITE ${PYQT_SCRIPTS_DIR}/${PYRCC5} "#!/bin/sh\nexec python3 -m PyQt5.pyrcc_main \${1+\"\$@\"}")
+file(WRITE ${PYQT_SCRIPTS_DIR}/${PYUIC5} "#!/bin/sh\nexec python3 -m PyQt5.uic.pyuic \${1+\"\$@\"}")
+file(WRITE ${PYQT_SCRIPTS_DIR}/${PYLUPDATE5} "#!/bin/sh\nexec python3 -m PyQt5.pylupdate_main \${1+\"\$@\"}")
+
 
 include(GNUInstallDirs)
 
@@ -271,7 +277,7 @@ if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL )
     
     install(FILES ${PYQT_SCRIPTS}
         PERMISSIONS OWNER_EXECUTE OWNER_READ
-        DESTINATION usr/bin
+        DESTINATION bin
     )
 endif()
 
